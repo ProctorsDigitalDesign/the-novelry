@@ -1,0 +1,118 @@
+.blog-banner_wrapper .text-color-white {
+  color: #fff !important;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:root {
+  --btt-size: 56px;
+  --btt-radius: 50%;
+  --btt-z: 999999;
+  --btt-bg: #ea602a;
+  --btt-fg: #ffffff;
+  --btt-progress: #d64f1e;
+  --btt-progress-bg: rgba(255,255,255,0.3);
+}
+
+.back-to-top {
+  position: fixed;
+  right: max(25px, env(safe-area-inset-right));
+  bottom: calc(max(20px, env(safe-area-inset-bottom)) + 100px);
+  width: var(--btt-size);
+  height: var(--btt-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--btt-radius);
+  background: var(--btt-bg);
+  color: var(--btt-fg);
+  cursor: pointer;
+  transition: transform .2s ease, opacity .2s ease;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  z-index: var(--btt-z);
+}
+
+.back-to-top.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.back-to-top:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.progress-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.progress-ring__bg {
+  fill: none;
+  stroke: var(--btt-progress-bg);
+  stroke-width: 3.5;
+}
+
+.progress-ring__fg {
+  fill: none;
+  stroke: var(--btt-progress);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 100, 100;
+  stroke-dashoffset: 100;
+  transition: stroke-dashoffset 0.2s linear;
+}
+
+.arrow-icon {
+  position: relative;
+  z-index: 1;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--btt-fg);
+}
+
+@media (max-width: 479px) {
+  .back-to-top {
+    bottom: calc(max(16px, env(safe-area-inset-bottom)) + 72px);
+    right: max(12px, env(safe-area-inset-right));
+    --btt-size: 48px;
+  }
+}
+
+.courses-track {
+  display: flex;
+}
+
+.courses-slide {
+  flex-shrink: 0;
+}
+
+.w-richtext figure.w-richtext-figure-type-video,
+.w-richtext figure[data-rt-type="video"] {
+  width: 100% !important;
+}
+
+.w-richtext figure {
+  max-width: 100% !important;
+}
+
+.courses-scrollbar .swiper-scrollbar-drag {
+  background: #ea602a;
+  border-radius: 999px;
+}
