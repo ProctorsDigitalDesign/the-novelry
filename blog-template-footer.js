@@ -1,3 +1,25 @@
+$(document).ready(function () {
+  let title = document.title;
+  let url = window.location.href;
+
+  $('[data-share-facebook]').attr('href', 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&title=' + encodeURIComponent(title));
+  $('[data-share-facebook]').attr('target', '_blank');
+
+  $('[data-share-twitter]').attr('href', 'https://twitter.com/share?url=' + encodeURIComponent(url) + '&title=' + encodeURIComponent(title) + '&summary=');
+  $('[data-share-twitter]').attr('target', '_blank');
+
+  $('[data-share-linkedin]').attr('href', 'https://www.linkedin.com/shareArticle?mini=true&url=' + encodeURIComponent(url) + '&title=' + encodeURIComponent(title) + '&summary=');
+  $('[data-share-linkedin]').attr('target', '_blank');
+
+  $('[data-share-whatsapp]').attr('href', 'https://wa.me/?text=' + encodeURIComponent(url));
+  $('[data-share-whatsapp]').attr('target', '_blank');
+
+  let blogItem = $(".section_blog-other .blog_item-card");
+  if (blogItem.length < 1) {
+    $(".section_blog-other").hide();
+  }
+});
+
 document.addEventListener("DOMContentLoaded", function () {
   const contentEl = document.getElementById("content");
   const tocEl = document.getElementById("toc");
@@ -8,10 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const id = entry.target.getAttribute("id");
 
         if (entry.isIntersecting) {
-          document.querySelectorAll(".active").forEach((el) => {
-            el.classList.remove("active");
-          });
-
+          document.querySelectorAll(".active").forEach((el) => el.classList.remove("active"));
           const activeLink = document.querySelector(`a[href="#${id}"]`);
           if (activeLink) activeLink.classList.add("active");
         }
@@ -19,8 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }, { rootMargin: "0px 0px -75% 0px" });
 
     contentEl.querySelectorAll("h2").forEach(function (heading, i) {
-      let str = heading.textContent.trim();
-      str = str
+      let str = heading.textContent.trim()
         .replace(/\s+/g, "-")
         .replace(/[°&\/\\#,+()$~%.'":;*?<>{}]/g, "")
         .toLowerCase();
@@ -32,15 +50,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const item = document.createElement("a");
       item.innerHTML = heading.innerHTML;
-      item.setAttribute("class", "tocitem");
-      item.setAttribute("href", "#" + str);
+      item.className = "tocitem";
+      item.href = "#" + str;
       tocEl.appendChild(item);
     });
   }
 
   document.querySelectorAll(".w-richtext-align-center.w-richtext-figure-type-video").forEach((figure) => {
     const iframe = figure.querySelector("iframe");
-
     if (iframe && iframe.src.includes("embedly.com") && iframe.src.includes("tiktok.com")) {
       figure.style.paddingBottom = "760px";
     }
@@ -48,15 +65,11 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  const tagLinks = document.querySelectorAll(".tag-link");
-
-  tagLinks.forEach((link) => {
+  document.querySelectorAll(".tag-link").forEach((link) => {
     const tagName = link.querySelector(".tag-text")?.textContent.trim();
-
     if (tagName) {
-      const customEncoded = tagName.replace(/ /g, "+");
-      const finalHref = `/blog?topic_equal=%5B"${customEncoded}"%5D`;
-      link.href = finalHref;
+      const encoded = tagName.replace(/ /g, "+");
+      link.href = `/blog?topic_equal=%5B"${encoded}"%5D`;
     }
   });
 });
@@ -67,7 +80,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   var fg = btn.querySelector(".progress-ring__fg");
   var circumference = 100;
-  var showAfter = 400;
 
   function updateProgress() {
     var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -79,24 +91,13 @@ document.addEventListener("DOMContentLoaded", function () {
       fg.style.strokeDashoffset = circumference - scrolled;
     }
 
-    if (scrollTop > showAfter) {
-      if (btn.hidden) btn.hidden = false;
-      btn.classList.add("is-visible");
-    } else {
-      btn.classList.remove("is-visible");
-    }
+    btn.classList.toggle("is-visible", scrollTop > 400);
   }
 
-  function scrollToTop() {
-    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if ("scrollBehavior" in document.documentElement.style && !reduce) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-      window.scrollTo(0, 0);
-    }
-  }
+  btn.addEventListener("click", function () {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
 
-  btn.addEventListener("click", scrollToTop);
   window.addEventListener("scroll", updateProgress, { passive: true });
   window.addEventListener("resize", updateProgress);
   updateProgress();
@@ -122,27 +123,8 @@ document.addEventListener("DOMContentLoaded", function () {
       observer: true,
       observeParents: true,
       slidesPerView: "auto",
-      navigation: (nextBtn && prevBtn) ? {
-        nextEl: nextBtn,
-        prevEl: prevBtn
-      } : false,
-      scrollbar: scrollbarEl ? {
-        el: scrollbarEl,
-        draggable: false,
-        dragSize: 140,
-        hide: false
-      } : false,
-      on: {
-        init: function () {
-          if (scrollbarEl) {
-            const drag = scrollbarEl.querySelector(".swiper-scrollbar-drag");
-            if (drag) {
-              drag.style.background = "#ea602a";
-              drag.style.borderRadius = "999px";
-            }
-          }
-        }
-      }
+      navigation: nextBtn && prevBtn ? { nextEl: nextBtn, prevEl: prevBtn } : false,
+      scrollbar: scrollbarEl ? { el: scrollbarEl, draggable: false, dragSize: 140, hide: false } : false
     });
   });
 });
@@ -163,7 +145,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function setCookie(name, value, days) {
     const date = new Date();
-    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    date.setTime(date.getTime() + days * 86400000);
     document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/; SameSite=Lax`;
   }
 
@@ -172,126 +154,62 @@ document.addEventListener("DOMContentLoaded", function () {
     return match ? match[2] : null;
   }
 
-  function hasSeenPopup() {
-    return !!getCookie(COOKIE_NAME);
-  }
-
-  function rememberUser() {
-    setCookie(COOKIE_NAME, "true", COOKIE_DAYS);
-  }
-
   function disableScroll() {
     scrollY = window.scrollY;
     document.body.style.position = "fixed";
     document.body.style.top = `-${scrollY}px`;
-    document.body.style.left = "0";
-    document.body.style.right = "0";
     document.body.style.width = "100%";
-    document.body.style.overflow = "hidden";
   }
 
   function enableScroll() {
     document.body.style.position = "";
     document.body.style.top = "";
-    document.body.style.left = "";
-    document.body.style.right = "";
-    document.body.style.width = "";
-    document.body.style.overflow = "";
     window.scrollTo(0, scrollY);
   }
 
   function showPopup() {
-    if (popupVisible || hasSeenPopup()) return;
+    if (popupVisible || getCookie(COOKIE_NAME)) return;
     popup.style.display = "flex";
     popupVisible = true;
     disableScroll();
   }
 
-  function hidePopup() {
+  function allowExit() {
+    setCookie(COOKIE_NAME, "true", COOKIE_DAYS);
     popup.style.display = "none";
     popupVisible = false;
     enableScroll();
-  }
-
-  function allowExit() {
-    rememberUser();
-    hidePopup();
-    if (pendingNavigation) {
-      const url = pendingNavigation;
-      pendingNavigation = null;
-      window.location.href = url;
-    }
-  }
-
-  function isRealPageLink(link) {
-    if (!link || !link.href) return false;
-    if (link.target === "_blank") return false;
-    if (link.hasAttribute("download")) return false;
-    if (link.getAttribute("href").startsWith("#")) return false;
-    if (link.href.startsWith("mailto:")) return false;
-    if (link.href.startsWith("tel:")) return false;
-
-    const currentUrl = new URL(window.location.href);
-    const targetUrl = new URL(link.href, window.location.origin);
-
-    if (targetUrl.origin !== currentUrl.origin) return false;
-
-    if (
-      targetUrl.pathname === currentUrl.pathname &&
-      targetUrl.search === currentUrl.search &&
-      targetUrl.hash !== ""
-    ) {
-      return false;
-    }
-
-    return true;
+    if (pendingNavigation) window.location.href = pendingNavigation;
   }
 
   document.addEventListener("mouseout", function (e) {
-    if (hasSeenPopup() || popupVisible) return;
-    const leavingWindow = !e.relatedTarget && !e.toElement;
-    const leavingTop = e.clientY <= 10;
-    if (leavingWindow && leavingTop) showPopup();
+    if (popupVisible || getCookie(COOKIE_NAME)) return;
+    if (!e.relatedTarget && e.clientY <= 10) showPopup();
   });
 
   document.addEventListener("click", function (e) {
     const link = e.target.closest("a");
-    if (!isRealPageLink(link)) return;
-    if (hasSeenPopup()) return;
-    if (popupVisible) {
+    if (!link || popupVisible || getCookie(COOKIE_NAME)) return;
+    if (link.href && link.origin === location.origin && !link.href.includes("#")) {
       e.preventDefault();
-      return;
+      pendingNavigation = link.href;
+      showPopup();
     }
-    e.preventDefault();
-    pendingNavigation = link.href;
-    showPopup();
   });
 
-  if (exitBtn) {
-    exitBtn.addEventListener("click", function (e) {
-      e.preventDefault();
-      allowExit();
-    });
-  }
+  if (exitBtn) exitBtn.addEventListener("click", function (e) {
+    e.preventDefault();
+    allowExit();
+  });
 
   popup.addEventListener("click", function (e) {
     if (e.target === popup) allowExit();
   });
 
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && popupVisible) allowExit();
-  });
-
   if (successMessage) {
-    const observer = new MutationObserver(function () {
-      const style = window.getComputedStyle(successMessage);
-      const isVisible = style.display !== "none" && style.visibility !== "hidden";
-      if (isVisible) allowExit();
-    });
-
-    observer.observe(successMessage, {
-      attributes: true,
-      attributeFilter: ["style", "class"]
-    });
+    new MutationObserver(() => {
+      const visible = getComputedStyle(successMessage).display !== "none";
+      if (visible) allowExit();
+    }).observe(successMessage, { attributes: true });
   }
 });
