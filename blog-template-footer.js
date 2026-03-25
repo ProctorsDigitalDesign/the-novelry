@@ -106,25 +106,88 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll(".carouse_content_wrapper, .carouse_content-wrapper").forEach(function (section) {
     const slider = section.querySelector(".courses-slider");
+    const track = section.querySelector(".courses-track");
     const nextBtn = section.querySelector(".courses-next");
     const prevBtn = section.querySelector(".courses-prev");
     const scrollbarEl = section.querySelector(".courses-scrollbar");
-    const slides = section.querySelectorAll(".courses-slide");
+    const navigationWrap = section.querySelector(".courses-navigation");
+    const slides = Array.from(section.querySelectorAll(".courses-slide"));
 
-    if (!slider || !slides.length) return;
+    if (!slider || !track || !slides.length) return;
 
-    new Swiper(slider, {
-      wrapperClass: "courses-track",
-      slideClass: "courses-slide",
-      loop: slides.length > 1,
-      speed: 700,
-      grabCursor: true,
-      watchOverflow: true,
-      observer: true,
-      observeParents: true,
-      slidesPerView: "auto",
-      navigation: nextBtn && prevBtn ? { nextEl: nextBtn, prevEl: prevBtn } : false,
-      scrollbar: scrollbarEl ? { el: scrollbarEl, draggable: false, dragSize: 140, hide: false } : false
+    let swiperInstance = null;
+    let resizeRaf = null;
+
+    function getSlidesTotalWidth() {
+      return slides.reduce((total, slide) => {
+        const styles = window.getComputedStyle(slide);
+        const marginLeft = parseFloat(styles.marginLeft) || 0;
+        const marginRight = parseFloat(styles.marginRight) || 0;
+        return total + slide.offsetWidth + marginLeft + marginRight;
+      }, 0);
+    }
+
+    function shouldEnableSlider() {
+      const sliderWidth = slider.clientWidth;
+      const slidesWidth = getSlidesTotalWidth();
+      return slidesWidth > sliderWidth + 1;
+    }
+
+    function showNavigation() {
+      if (navigationWrap) navigationWrap.style.display = "";
+    }
+
+    function hideNavigation() {
+      if (navigationWrap) navigationWrap.style.display = "none";
+    }
+
+    function enableStaticMode() {
+      if (swiperInstance) {
+        swiperInstance.destroy(true, true);
+        swiperInstance = null;
+      }
+
+      slider.classList.remove("is-swiper-active");
+      hideNavigation();
+
+      track.style.transform = "";
+      track.style.transitionDuration = "";
+    }
+
+    function enableSliderMode() {
+      if (swiperInstance) return;
+
+      slider.classList.add("is-swiper-active");
+      showNavigation();
+
+      swiperInstance = new Swiper(slider, {
+        wrapperClass: "courses-track",
+        slideClass: "courses-slide",
+        loop: slides.length > 1,
+        speed: 700,
+        grabCursor: true,
+        watchOverflow: true,
+        observer: true,
+        observeParents: true,
+        slidesPerView: "auto",
+        navigation: nextBtn && prevBtn ? { nextEl: nextBtn, prevEl: prevBtn } : false,
+        scrollbar: scrollbarEl ? { el: scrollbarEl, draggable: false, dragSize: 140, hide: false } : false
+      });
+    }
+
+    function updateSliderState() {
+      if (shouldEnableSlider()) {
+        enableSliderMode();
+      } else {
+        enableStaticMode();
+      }
+    }
+
+    updateSliderState();
+
+    window.addEventListener("resize", function () {
+      if (resizeRaf) cancelAnimationFrame(resizeRaf);
+      resizeRaf = requestAnimationFrame(updateSliderState);
     });
   });
 });
