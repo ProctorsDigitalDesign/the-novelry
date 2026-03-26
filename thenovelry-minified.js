@@ -3,14 +3,13 @@
   style.textContent = `
     .editor-slider_scrollbar,
     .coaches-slider_scrollbar {
-      border-radius: inherit;
       position: relative;
       overflow: hidden;
       cursor: pointer;
     }
 
-    .manual-scrollbar-drag {
-      background: #ea602a !important;
+    .editor-slider_scrollbar .manual-scrollbar-drag,
+    .coaches-slider_scrollbar .manual-scrollbar-drag {
       border-radius: inherit;
       height: 100%;
       position: absolute;
@@ -19,6 +18,7 @@
       pointer-events: none;
       will-change: transform, width;
       transition: transform 180ms ease-out, width 180ms ease-out !important;
+      background: rgba(0, 0, 0, 0.5);
     }
   `;
   document.head.appendChild(style);
@@ -275,12 +275,6 @@ function getEffectiveSlidesPerView(swiper) {
 function ensureManualScrollbar(scrollbarEl) {
   if (!scrollbarEl) return null;
 
-  /* ONLY apply to editor + coaches */
-  if (
-    scrollbarEl.id !== "editor-slider_scrollbar" &&
-    scrollbarEl.id !== "coaches-slider_scrollbar"
-  ) return null;
-
   let dragEl = scrollbarEl.querySelector(".manual-scrollbar-drag");
   if (!dragEl) {
     dragEl = document.createElement("div");
@@ -288,12 +282,11 @@ function ensureManualScrollbar(scrollbarEl) {
     scrollbarEl.appendChild(dragEl);
   }
 
-  /* KEEP Webflow track styling (background image etc.) */
+  /* Do not override Webflow background image on the track */
   scrollbarEl.style.position = "relative";
   scrollbarEl.style.overflow = "hidden";
   scrollbarEl.style.cursor = "pointer";
 
-  /* DO NOT override colors */
   dragEl.style.position = "absolute";
   dragEl.style.left = "0";
   dragEl.style.top = "0";
