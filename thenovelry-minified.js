@@ -263,6 +263,9 @@ if (submissionsSwiperEl) {
       forceToAxis: !0,
       releaseOnEdges: !0
     },
+    observer: !0,
+    observeParents: !0,
+    updateOnWindowResize: !0,
     breakpoints: {
       320: { slidesPerView: 1 },
       580: { slidesPerView: 2, spaceBetween: 24 },
@@ -275,8 +278,41 @@ if (submissionsSwiperEl) {
     } : !1,
     scrollbar: scrollbarEl ? {
       el: scrollbarEl,
-      draggable: !0
-    } : !1
+      draggable: !0,
+      hide: !1
+    } : !1,
+    on: {
+      init(swiper) {
+        if (swiper.scrollbar) {
+          swiper.scrollbar.updateSize();
+          swiper.scrollbar.setTranslate();
+        }
+      },
+      slideChange(swiper) {
+        if (swiper.scrollbar) {
+          swiper.scrollbar.updateSize();
+          swiper.scrollbar.setTranslate();
+        }
+      },
+      transitionEnd(swiper) {
+        if (swiper.scrollbar) {
+          swiper.scrollbar.updateSize();
+          swiper.scrollbar.setTranslate();
+        }
+      },
+      touchEnd(swiper) {
+        if (swiper.scrollbar) {
+          swiper.scrollbar.updateSize();
+          swiper.scrollbar.setTranslate();
+        }
+      },
+      resize(swiper) {
+        if (swiper.scrollbar) {
+          swiper.scrollbar.updateSize();
+          swiper.scrollbar.setTranslate();
+        }
+      }
+    }
   });
 
   new IntersectionObserver((entries) => {
@@ -289,6 +325,14 @@ if (submissionsSwiperEl) {
   if (!(rect.top < 0.7 * window.innerHeight && rect.bottom > 0.3 * window.innerHeight)) {
     editorSwiper.autoplay.stop();
   }
+
+  requestAnimationFrame(() => {
+    editorSwiper.update();
+    if (editorSwiper.scrollbar) {
+      editorSwiper.scrollbar.updateSize();
+      editorSwiper.scrollbar.setTranslate();
+    }
+  });
 })();
 
 /* =========================
@@ -325,6 +369,9 @@ if (submissionsSwiperEl) {
       forceToAxis: !0,
       releaseOnEdges: !0
     },
+    observer: !0,
+    observeParents: !0,
+    updateOnWindowResize: !0,
     breakpoints: {
       320: { slidesPerView: 1 },
       580: { slidesPerView: 2, spaceBetween: 24 },
@@ -337,8 +384,41 @@ if (submissionsSwiperEl) {
     } : !1,
     scrollbar: scrollbarEl ? {
       el: scrollbarEl,
-      draggable: !0
-    } : !1
+      draggable: !0,
+      hide: !1
+    } : !1,
+    on: {
+      init(swiper) {
+        if (swiper.scrollbar) {
+          swiper.scrollbar.updateSize();
+          swiper.scrollbar.setTranslate();
+        }
+      },
+      slideChange(swiper) {
+        if (swiper.scrollbar) {
+          swiper.scrollbar.updateSize();
+          swiper.scrollbar.setTranslate();
+        }
+      },
+      transitionEnd(swiper) {
+        if (swiper.scrollbar) {
+          swiper.scrollbar.updateSize();
+          swiper.scrollbar.setTranslate();
+        }
+      },
+      touchEnd(swiper) {
+        if (swiper.scrollbar) {
+          swiper.scrollbar.updateSize();
+          swiper.scrollbar.setTranslate();
+        }
+      },
+      resize(swiper) {
+        if (swiper.scrollbar) {
+          swiper.scrollbar.updateSize();
+          swiper.scrollbar.setTranslate();
+        }
+      }
+    }
   });
 
   new IntersectionObserver((entries) => {
@@ -351,6 +431,14 @@ if (submissionsSwiperEl) {
   if (!(rect.top < 0.7 * window.innerHeight && rect.bottom > 0.3 * window.innerHeight)) {
     coachesSwiper.autoplay.stop();
   }
+
+  requestAnimationFrame(() => {
+    coachesSwiper.update();
+    if (coachesSwiper.scrollbar) {
+      coachesSwiper.scrollbar.updateSize();
+      coachesSwiper.scrollbar.setTranslate();
+    }
+  });
 })();
 
 const eventsSwiper = new Swiper(".events_swiper", {
