@@ -252,16 +252,17 @@ function getEffectiveSlidesPerView(swiper) {
 function ensureManualScrollbar(scrollbarEl) {
   if (!scrollbarEl) return null;
 
-  let dragEl = scrollbarEl.querySelector(".swiper-scrollbar-drag");
+  /* FIX: do NOT reuse ".swiper-scrollbar-drag" — Webflow/Swiper CSS targets
+     that class and forces transitions back on. Use a neutral class name. */
+  let dragEl = scrollbarEl.querySelector(".manual-scrollbar-drag");
   if (!dragEl) {
     dragEl = document.createElement("div");
-    dragEl.className = "swiper-scrollbar-drag";
+    dragEl.className = "manual-scrollbar-drag";
     scrollbarEl.appendChild(dragEl);
   }
 
-  /* ── FIX: kill any Swiper-injected transition on the track and drag ── */
-  scrollbarEl.style.cssText += ";position:relative;overflow:hidden;";
-  dragEl.style.cssText += ";position:absolute;left:0;top:0;height:100%;will-change:transform,width;transition:none !important;";
+  scrollbarEl.style.cssText += ";position:relative;overflow:hidden;cursor:pointer;";
+  dragEl.style.cssText = "position:absolute;left:0;top:0;height:100%;will-change:transform,width;transition:none !important;pointer-events:none;border-radius:inherit;";
 
   return dragEl;
 }
@@ -371,9 +372,29 @@ function bindManualScrollbar(swiper, scrollbarEl) {
   const controlsEl  = document.getElementById("editor-controls");
   const nextEl      = document.getElementById("editor-slider_button-next");
   const prevEl      = document.getElementById("editor-slider_button-prev");
-  const scrollbarEl = document.getElementById("editor-slider_scrollbar");
+
+  /* FIX: Webflow doesn't assign the custom ID to the scrollbar element —
+     it only has the class "swiper-scrollbar". Look it up relative to the
+     slider's parent container so we don't accidentally grab a different
+     slider's scrollbar. Falls back to the ID in case it does exist. */
+  const scrollbarEl = document.getElementById("editor-slider_scrollbar")
+    || (sliderEl && sliderEl.closest(".slider-navigation-wrapper, [id*='editor'], section, .section")
+        ? sliderEl.closest(".slider-navigation-wrapper, [id*='editor'], section, .section").querySelector(".swiper-scrollbar")
+        : null)
+    || (sliderEl && sliderEl.parentElement
+        ? sliderEl.parentElement.querySelector(".swiper-scrollbar")
+        : null);
 
   if (!sliderEl) return;
+
+  /* FIX: Prevent Swiper from auto-adopting the .swiper-scrollbar element
+     (which sits outside the wrapper) by renaming its class before init,
+     then restoring after — this stops Swiper's scrollbar module from
+     hijacking it and injecting its own drag logic. */
+  if (scrollbarEl) {
+    scrollbarEl.classList.remove("swiper-scrollbar");
+    scrollbarEl.setAttribute("data-manual-scrollbar", "editor");
+  }
 
   if (controlsEl) {
     sliderEl.appendChild(controlsEl);
@@ -422,9 +443,23 @@ function bindManualScrollbar(swiper, scrollbarEl) {
   const controlsEl  = document.getElementById("coaches-controls");
   const nextEl      = document.getElementById("coaches-slider_button-next");
   const prevEl      = document.getElementById("coaches-slider_button-prev");
-  const scrollbarEl = document.getElementById("coaches-slider_scrollbar");
+
+  /* FIX: same Webflow class-only scrollbar lookup as editor slider */
+  const scrollbarEl = document.getElementById("coaches-slider_scrollbar")
+    || (sliderEl && sliderEl.closest(".slider-navigation-wrapper, [id*='coaches'], section, .section")
+        ? sliderEl.closest(".slider-navigation-wrapper, [id*='coaches'], section, .section").querySelector(".swiper-scrollbar")
+        : null)
+    || (sliderEl && sliderEl.parentElement
+        ? sliderEl.parentElement.querySelector(".swiper-scrollbar")
+        : null);
 
   if (!sliderEl) return;
+
+  /* FIX: prevent Swiper from hijacking this scrollbar element */
+  if (scrollbarEl) {
+    scrollbarEl.classList.remove("swiper-scrollbar");
+    scrollbarEl.setAttribute("data-manual-scrollbar", "coaches");
+  }
 
   if (controlsEl) {
     sliderEl.appendChild(controlsEl);
