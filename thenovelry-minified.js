@@ -229,9 +229,6 @@ if (submissionsSwiperEl) {
   }
 }
 
-/* =========================
-   EDITOR SLIDER
-========================= */
 (() => {
   const sliderEl = document.getElementById("editor-slider");
   const controlsEl = document.getElementById("editor-controls");
@@ -280,7 +277,12 @@ if (submissionsSwiperEl) {
       el: scrollbarEl,
       draggable: !0,
       hide: !1
-    } : !1
+    } : !1,
+    on: {
+      init(swiper) {
+        if (swiper.scrollbar) swiper.scrollbar.updateSize();
+      }
+    }
   });
 
   new IntersectionObserver((entries) => {
@@ -303,9 +305,6 @@ if (submissionsSwiperEl) {
   });
 })();
 
-/* =========================
-   COACHES SLIDER
-========================= */
 (() => {
   const sliderEl = document.getElementById("coaches-slider");
   const controlsEl = document.getElementById("coaches-controls");
@@ -354,7 +353,12 @@ if (submissionsSwiperEl) {
       el: scrollbarEl,
       draggable: !0,
       hide: !1
-    } : !1
+    } : !1,
+    on: {
+      init(swiper) {
+        if (swiper.scrollbar) swiper.scrollbar.updateSize();
+      }
+    }
   });
 
   new IntersectionObserver((entries) => {
