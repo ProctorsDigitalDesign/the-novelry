@@ -320,25 +320,25 @@ if (submissionsSwiperEl) {
 
   const coachesSwiper = new Swiper(sliderEl, {
     direction: "horizontal",
-    watchSlidesProgress: !0,
+    watchSlidesProgress: true,
     slidesPerView: 1,
     spaceBetween: 32,
     threshold: 20,
-    centeredSlides: !1,
+    centeredSlides: false,
     speed: 400,
     autoplay: {
-      delay: 4e3,
-      disableOnInteraction: !1,
-      pauseOnMouseEnter: !0
+      delay: 4000,
+      disableOnInteraction: false,
+      pauseOnMouseEnter: true
     },
-    rewind: !0,
+    rewind: true,
     mousewheel: {
-      forceToAxis: !0,
-      releaseOnEdges: !0
+      forceToAxis: true,
+      releaseOnEdges: true
     },
-    observer: !0,
-    observeParents: !0,
-    updateOnWindowResize: !0,
+    observer: true,
+    observeParents: true,
+    updateOnWindowResize: true,
     breakpoints: {
       320: { slidesPerView: 1 },
       580: { slidesPerView: 2, spaceBetween: 24 },
@@ -348,15 +348,36 @@ if (submissionsSwiperEl) {
     navigation: nextEl && prevEl ? {
       nextEl,
       prevEl
-    } : !1,
+    } : false,
     scrollbar: scrollbarEl ? {
       el: scrollbarEl,
-      draggable: !0,
-      hide: !1
-    } : !1,
+      draggable: true,
+      hide: false
+    } : false,
     on: {
       init(swiper) {
-        if (swiper.scrollbar) swiper.scrollbar.updateSize();
+        if (swiper.scrollbar) {
+          swiper.scrollbar.updateSize();
+          swiper.scrollbar.setTranslate();
+        }
+      },
+      slideChange(swiper) {
+        if (swiper.scrollbar) {
+          swiper.scrollbar.updateSize();
+          swiper.scrollbar.setTranslate();
+        }
+      },
+      resize(swiper) {
+        if (swiper.scrollbar) {
+          swiper.scrollbar.updateSize();
+          swiper.scrollbar.setTranslate();
+        }
+      },
+      breakpoint(swiper) {
+        if (swiper.scrollbar) {
+          swiper.scrollbar.updateSize();
+          swiper.scrollbar.setTranslate();
+        }
       }
     }
   });
@@ -379,6 +400,14 @@ if (submissionsSwiperEl) {
       coachesSwiper.scrollbar.setTranslate();
     }
   });
+
+  setTimeout(() => {
+    coachesSwiper.update();
+    if (coachesSwiper.scrollbar) {
+      coachesSwiper.scrollbar.updateSize();
+      coachesSwiper.scrollbar.setTranslate();
+    }
+  }, 100);
 })();
 
 const eventsSwiper = new Swiper(".events_swiper", {
