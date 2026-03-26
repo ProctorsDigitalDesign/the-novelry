@@ -247,25 +247,25 @@ if (submissionsSwiperEl) {
 
   const editorSwiper = new Swiper(sliderEl, {
     direction: "horizontal",
-    watchSlidesProgress: !0,
+    watchSlidesProgress: true,
     slidesPerView: 1,
     spaceBetween: 32,
     threshold: 20,
-    centeredSlides: !1,
+    centeredSlides: false,
     speed: 400,
     autoplay: {
-      delay: 4e3,
-      disableOnInteraction: !1,
-      pauseOnMouseEnter: !0
+      delay: 4000,
+      disableOnInteraction: false,
+      pauseOnMouseEnter: true
     },
-    rewind: !0,
+    rewind: true,
     mousewheel: {
-      forceToAxis: !0,
-      releaseOnEdges: !0
+      forceToAxis: true,
+      releaseOnEdges: true
     },
-    observer: !0,
-    observeParents: !0,
-    updateOnWindowResize: !0,
+    observer: true,
+    observeParents: true,
+    updateOnWindowResize: true,
     breakpoints: {
       320: { slidesPerView: 1 },
       580: { slidesPerView: 2, spaceBetween: 24 },
@@ -275,45 +275,49 @@ if (submissionsSwiperEl) {
     navigation: nextEl && prevEl ? {
       nextEl,
       prevEl
-    } : !1,
-    scrollbar: scrollbarEl ? {
-      el: scrollbarEl,
-      draggable: !0,
-      hide: !1
-    } : !1,
-    on: {
-      init(swiper) {
-        if (swiper.scrollbar) {
-          swiper.scrollbar.updateSize();
-          swiper.scrollbar.setTranslate();
-        }
-      },
-      slideChange(swiper) {
-        if (swiper.scrollbar) {
-          swiper.scrollbar.updateSize();
-          swiper.scrollbar.setTranslate();
-        }
-      },
-      transitionEnd(swiper) {
-        if (swiper.scrollbar) {
-          swiper.scrollbar.updateSize();
-          swiper.scrollbar.setTranslate();
-        }
-      },
-      touchEnd(swiper) {
-        if (swiper.scrollbar) {
-          swiper.scrollbar.updateSize();
-          swiper.scrollbar.setTranslate();
-        }
-      },
-      resize(swiper) {
-        if (swiper.scrollbar) {
-          swiper.scrollbar.updateSize();
-          swiper.scrollbar.setTranslate();
-        }
-      }
-    }
+    } : false,
+    scrollbar: false
   });
+
+  function updateEditorScrollbar() {
+    if (!scrollbarEl) return;
+
+    let dragEl = scrollbarEl.querySelector(".swiper-scrollbar-drag");
+    if (!dragEl) {
+      dragEl = document.createElement("div");
+      dragEl.className = "swiper-scrollbar-drag";
+      scrollbarEl.appendChild(dragEl);
+    }
+
+    const snapGrid = editorSwiper.snapGrid || [];
+    const totalSteps = Math.max(snapGrid.length - 1, 1);
+    const currentStep = Math.min(editorSwiper.realIndex ?? editorSwiper.activeIndex ?? 0, totalSteps);
+    const progress = currentStep / totalSteps;
+
+    const trackWidth = scrollbarEl.clientWidth;
+    const slidesPerView = Number(editorSwiper.params.slidesPerView) || 1;
+    const totalSlides = editorSwiper.slides ? editorSwiper.slides.length : 1;
+
+    let visibleRatio = slidesPerView / totalSlides;
+    if (!Number.isFinite(visibleRatio) || visibleRatio <= 0) visibleRatio = 1;
+    visibleRatio = Math.max(visibleRatio, 0.18);
+    visibleRatio = Math.min(visibleRatio, 1);
+
+    const dragWidth = trackWidth * visibleRatio;
+    const maxTranslate = Math.max(trackWidth - dragWidth, 0);
+    const translateX = maxTranslate * progress;
+
+    dragEl.style.width = `${dragWidth}px`;
+    dragEl.style.transform = `translate3d(${translateX}px, 0, 0)`;
+  }
+
+  editorSwiper.on("init", updateEditorScrollbar);
+  editorSwiper.on("slideChange", updateEditorScrollbar);
+  editorSwiper.on("transitionEnd", updateEditorScrollbar);
+  editorSwiper.on("setTranslate", updateEditorScrollbar);
+  editorSwiper.on("resize", updateEditorScrollbar);
+  editorSwiper.on("observerUpdate", updateEditorScrollbar);
+  editorSwiper.on("breakpoint", updateEditorScrollbar);
 
   new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
@@ -328,10 +332,7 @@ if (submissionsSwiperEl) {
 
   requestAnimationFrame(() => {
     editorSwiper.update();
-    if (editorSwiper.scrollbar) {
-      editorSwiper.scrollbar.updateSize();
-      editorSwiper.scrollbar.setTranslate();
-    }
+    updateEditorScrollbar();
   });
 })();
 
@@ -353,25 +354,25 @@ if (submissionsSwiperEl) {
 
   const coachesSwiper = new Swiper(sliderEl, {
     direction: "horizontal",
-    watchSlidesProgress: !0,
+    watchSlidesProgress: true,
     slidesPerView: 1,
     spaceBetween: 32,
     threshold: 20,
-    centeredSlides: !1,
+    centeredSlides: false,
     speed: 400,
     autoplay: {
-      delay: 4e3,
-      disableOnInteraction: !1,
-      pauseOnMouseEnter: !0
+      delay: 4000,
+      disableOnInteraction: false,
+      pauseOnMouseEnter: true
     },
-    rewind: !0,
+    rewind: true,
     mousewheel: {
-      forceToAxis: !0,
-      releaseOnEdges: !0
+      forceToAxis: true,
+      releaseOnEdges: true
     },
-    observer: !0,
-    observeParents: !0,
-    updateOnWindowResize: !0,
+    observer: true,
+    observeParents: true,
+    updateOnWindowResize: true,
     breakpoints: {
       320: { slidesPerView: 1 },
       580: { slidesPerView: 2, spaceBetween: 24 },
@@ -381,44 +382,12 @@ if (submissionsSwiperEl) {
     navigation: nextEl && prevEl ? {
       nextEl,
       prevEl
-    } : !1,
+    } : false,
     scrollbar: scrollbarEl ? {
       el: scrollbarEl,
-      draggable: !0,
-      hide: !1
-    } : !1,
-    on: {
-      init(swiper) {
-        if (swiper.scrollbar) {
-          swiper.scrollbar.updateSize();
-          swiper.scrollbar.setTranslate();
-        }
-      },
-      slideChange(swiper) {
-        if (swiper.scrollbar) {
-          swiper.scrollbar.updateSize();
-          swiper.scrollbar.setTranslate();
-        }
-      },
-      transitionEnd(swiper) {
-        if (swiper.scrollbar) {
-          swiper.scrollbar.updateSize();
-          swiper.scrollbar.setTranslate();
-        }
-      },
-      touchEnd(swiper) {
-        if (swiper.scrollbar) {
-          swiper.scrollbar.updateSize();
-          swiper.scrollbar.setTranslate();
-        }
-      },
-      resize(swiper) {
-        if (swiper.scrollbar) {
-          swiper.scrollbar.updateSize();
-          swiper.scrollbar.setTranslate();
-        }
-      }
-    }
+      draggable: true,
+      hide: false
+    } : false
   });
 
   new IntersectionObserver((entries) => {
