@@ -1,29 +1,3 @@
-(() => {
-  const style = document.createElement("style");
-  style.textContent = `
-    .editor-slider_scrollbar,
-    .coaches-slider_scrollbar {
-      position: relative;
-      overflow: hidden;
-      cursor: pointer;
-    }
-
-    .editor-slider_scrollbar .manual-scrollbar-drag,
-    .coaches-slider_scrollbar .manual-scrollbar-drag {
-      border-radius: inherit;
-      height: 100%;
-      position: absolute;
-      left: 0;
-      top: 0;
-      pointer-events: none;
-      will-change: transform, width;
-      transition: transform 180ms ease-out, width 180ms ease-out !important;
-      background: rgba(0, 0, 0, 0.5);
-    }
-  `;
-  document.head.appendChild(style);
-})();
-
 const heroQuoteSwiper = new Swiper(".hero-quote-carousel", {
   direction: "horizontal",
   slidesPerView: 1,
@@ -255,131 +229,6 @@ if (submissionsSwiperEl) {
   }
 }
 
-function getEffectiveSlidesPerView(swiper) {
-  const bp = swiper.currentBreakpoint;
-  const bpParams = bp && swiper.params.breakpoints && swiper.params.breakpoints[bp]
-    ? swiper.params.breakpoints[bp]
-    : null;
-
-  let spv = bpParams && bpParams.slidesPerView != null
-    ? bpParams.slidesPerView
-    : swiper.params.slidesPerView;
-
-  if (spv === "auto") spv = 1;
-  spv = Number(spv);
-
-  if (!Number.isFinite(spv) || spv <= 0) spv = 1;
-  return spv;
-}
-
-function ensureManualScrollbar(scrollbarEl) {
-  if (!scrollbarEl) return null;
-
-  let dragEl = scrollbarEl.querySelector(".manual-scrollbar-drag");
-  if (!dragEl) {
-    dragEl = document.createElement("div");
-    dragEl.className = "manual-scrollbar-drag";
-    scrollbarEl.appendChild(dragEl);
-  }
-
-  /* Do not override Webflow background image on the track */
-  scrollbarEl.style.position = "relative";
-  scrollbarEl.style.overflow = "hidden";
-  scrollbarEl.style.cursor = "pointer";
-
-  dragEl.style.position = "absolute";
-  dragEl.style.left = "0";
-  dragEl.style.top = "0";
-  dragEl.style.height = "100%";
-  dragEl.style.pointerEvents = "none";
-  dragEl.style.borderRadius = "inherit";
-  dragEl.style.willChange = "transform,width";
-
-  return dragEl;
-}
-
-function syncManualScrollbar(swiper, scrollbarEl, rawTranslate) {
-  if (!swiper || !scrollbarEl) return;
-
-  const dragEl = ensureManualScrollbar(scrollbarEl);
-  if (!dragEl) return;
-
-  const trackWidth = scrollbarEl.clientWidth;
-  if (!trackWidth) return;
-
-  const totalSlides = swiper.slides && swiper.slides.length ? swiper.slides.length : 1;
-  const slidesPerView = getEffectiveSlidesPerView(swiper);
-
-  let visibleRatio = slidesPerView / totalSlides;
-  visibleRatio = Math.max(0.18, Math.min(1, visibleRatio));
-
-  const dragWidth = trackWidth * visibleRatio;
-  const maxTranslate = Math.max(trackWidth - dragWidth, 0);
-
-  let progress;
-  if (rawTranslate !== undefined && Number.isFinite(rawTranslate)) {
-    const minT = swiper.minTranslate();
-    const maxT = swiper.maxTranslate();
-    const range = minT - maxT;
-    progress = range !== 0 ? (minT - rawTranslate) / range : 0;
-  } else {
-    progress = swiper.progress;
-  }
-
-  if (!Number.isFinite(progress)) progress = 0;
-  progress = Math.max(0, Math.min(1, progress));
-
-  const isDragging = swiper.touches && swiper.touches.diff !== 0 && swiper.animating === false;
-  dragEl.style.transition = isDragging
-    ? "none"
-    : "transform 180ms ease-out, width 180ms ease-out";
-
-  dragEl.style.width = `${dragWidth}px`;
-  dragEl.style.transform = `translate3d(${maxTranslate * progress}px, 0, 0)`;
-}
-
-function attachAutoplayObserver(swiper, el) {
-  if (!swiper || !el) return;
-
-  new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      entry.isIntersecting ? swiper.autoplay.start() : swiper.autoplay.stop();
-    });
-  }, { threshold: 0.3 }).observe(el);
-
-  const rect = el.getBoundingClientRect();
-  if (!(rect.top < 0.7 * window.innerHeight && rect.bottom > 0.3 * window.innerHeight)) {
-    swiper.autoplay.stop();
-  }
-}
-
-function bindManualScrollbar(swiper, scrollbarEl) {
-  if (!swiper || !scrollbarEl) return;
-
-  const update = () => syncManualScrollbar(swiper, scrollbarEl);
-  const updateFromMove = (_swiper, translate) => syncManualScrollbar(swiper, scrollbarEl, translate);
-
-  swiper.on("init", update);
-  swiper.on("progress", update);
-  swiper.on("setTranslate", updateFromMove);
-  swiper.on("sliderMove", updateFromMove);
-  swiper.on("touchMove", updateFromMove);
-  swiper.on("slideChange", update);
-  swiper.on("transitionEnd", update);
-  swiper.on("resize", update);
-  swiper.on("observerUpdate", update);
-  swiper.on("breakpoint", update);
-  swiper.on("update", update);
-  swiper.on("touchEnd", update);
-
-  requestAnimationFrame(() => {
-    swiper.update();
-    update();
-  });
-
-  window.addEventListener("resize", update);
-}
-
 /* =========================
    EDITOR SLIDER
 ========================= */
@@ -388,9 +237,7 @@ function bindManualScrollbar(swiper, scrollbarEl) {
   const controlsEl = document.getElementById("editor-controls");
   const nextEl = document.getElementById("editor-slider_button-next");
   const prevEl = document.getElementById("editor-slider_button-prev");
-  const scrollbarEl =
-    document.querySelector(".editor-slider_scrollbar") ||
-    document.getElementById("editor-slider_scrollbar");
+  const scrollbarEl = document.querySelector(".editor-slider_scrollbar");
 
   if (!sliderEl) return;
 
@@ -425,12 +272,35 @@ function bindManualScrollbar(swiper, scrollbarEl) {
       992: { slidesPerView: 3, spaceBetween: 32 },
       1200: { slidesPerView: 3 }
     },
-    navigation: nextEl && prevEl ? { nextEl, prevEl } : !1,
-    scrollbar: !1
+    navigation: nextEl && prevEl ? {
+      nextEl,
+      prevEl
+    } : !1,
+    scrollbar: scrollbarEl ? {
+      el: scrollbarEl,
+      draggable: !0,
+      hide: !1
+    } : !1
   });
 
-  attachAutoplayObserver(editorSwiper, sliderEl);
-  bindManualScrollbar(editorSwiper, scrollbarEl);
+  new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      entry.isIntersecting ? editorSwiper.autoplay.start() : editorSwiper.autoplay.stop();
+    });
+  }, { threshold: 0.3 }).observe(sliderEl);
+
+  const rect = sliderEl.getBoundingClientRect();
+  if (!(rect.top < 0.7 * window.innerHeight && rect.bottom > 0.3 * window.innerHeight)) {
+    editorSwiper.autoplay.stop();
+  }
+
+  requestAnimationFrame(() => {
+    editorSwiper.update();
+    if (editorSwiper.scrollbar) {
+      editorSwiper.scrollbar.updateSize();
+      editorSwiper.scrollbar.setTranslate();
+    }
+  });
 })();
 
 /* =========================
@@ -441,9 +311,7 @@ function bindManualScrollbar(swiper, scrollbarEl) {
   const controlsEl = document.getElementById("coaches-controls");
   const nextEl = document.getElementById("coaches-slider_button-next");
   const prevEl = document.getElementById("coaches-slider_button-prev");
-  const scrollbarEl =
-    document.querySelector(".coaches-slider_scrollbar") ||
-    document.getElementById("coaches-slider_scrollbar");
+  const scrollbarEl = document.querySelector(".coaches-slider_scrollbar");
 
   if (!sliderEl) return;
 
@@ -478,12 +346,35 @@ function bindManualScrollbar(swiper, scrollbarEl) {
       992: { slidesPerView: 3, spaceBetween: 32 },
       1200: { slidesPerView: 3 }
     },
-    navigation: nextEl && prevEl ? { nextEl, prevEl } : !1,
-    scrollbar: !1
+    navigation: nextEl && prevEl ? {
+      nextEl,
+      prevEl
+    } : !1,
+    scrollbar: scrollbarEl ? {
+      el: scrollbarEl,
+      draggable: !0,
+      hide: !1
+    } : !1
   });
 
-  attachAutoplayObserver(coachesSwiper, sliderEl);
-  bindManualScrollbar(coachesSwiper, scrollbarEl);
+  new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      entry.isIntersecting ? coachesSwiper.autoplay.start() : coachesSwiper.autoplay.stop();
+    });
+  }, { threshold: 0.3 }).observe(sliderEl);
+
+  const rect = sliderEl.getBoundingClientRect();
+  if (!(rect.top < 0.7 * window.innerHeight && rect.bottom > 0.3 * window.innerHeight)) {
+    coachesSwiper.autoplay.stop();
+  }
+
+  requestAnimationFrame(() => {
+    coachesSwiper.update();
+    if (coachesSwiper.scrollbar) {
+      coachesSwiper.scrollbar.updateSize();
+      coachesSwiper.scrollbar.setTranslate();
+    }
+  });
 })();
 
 const eventsSwiper = new Swiper(".events_swiper", {
