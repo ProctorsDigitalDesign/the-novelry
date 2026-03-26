@@ -230,6 +230,113 @@ if (submissionsSwiperEl) {
 }
 
 /* =========================
+   SHARED MANUAL SCROLLBAR
+========================= */
+function getEffectiveSlidesPerView(swiper) {
+  const bp = swiper.currentBreakpoint;
+  const bpParams = bp && swiper.params.breakpoints && swiper.params.breakpoints[bp]
+    ? swiper.params.breakpoints[bp]
+    : null;
+
+  let spv = bpParams && bpParams.slidesPerView != null
+    ? bpParams.slidesPerView
+    : swiper.params.slidesPerView;
+
+  if (spv === "auto") spv = 1;
+  spv = Number(spv);
+
+  if (!Number.isFinite(spv) || spv <= 0) spv = 1;
+  return spv;
+}
+
+function ensureManualScrollbar(scrollbarEl) {
+  if (!scrollbarEl) return null;
+
+  let dragEl = scrollbarEl.querySelector(".swiper-scrollbar-drag");
+  if (!dragEl) {
+    dragEl = document.createElement("div");
+    dragEl.className = "swiper-scrollbar-drag";
+    scrollbarEl.appendChild(dragEl);
+  }
+
+  scrollbarEl.style.position = "relative";
+  scrollbarEl.style.overflow = "hidden";
+  dragEl.style.position = "absolute";
+  dragEl.style.left = "0";
+  dragEl.style.top = "0";
+  dragEl.style.height = "100%";
+  dragEl.style.willChange = "transform,width";
+
+  return dragEl;
+}
+
+function syncManualScrollbar(swiper, scrollbarEl) {
+  if (!swiper || !scrollbarEl) return;
+
+  const dragEl = ensureManualScrollbar(scrollbarEl);
+  if (!dragEl) return;
+
+  const trackWidth = scrollbarEl.clientWidth;
+  if (!trackWidth) return;
+
+  const totalSlides = swiper.slides && swiper.slides.length ? swiper.slides.length : 1;
+  const slidesPerView = getEffectiveSlidesPerView(swiper);
+
+  let visibleRatio = slidesPerView / totalSlides;
+  visibleRatio = Math.max(0.18, Math.min(1, visibleRatio));
+
+  const dragWidth = trackWidth * visibleRatio;
+  const maxTranslate = Math.max(trackWidth - dragWidth, 0);
+
+  let progress = swiper.progress;
+  if (!Number.isFinite(progress)) progress = 0;
+  progress = Math.max(0, Math.min(1, progress));
+
+  dragEl.style.width = `${dragWidth}px`;
+  dragEl.style.transform = `translate3d(${maxTranslate * progress}px, 0, 0)`;
+}
+
+function attachAutoplayObserver(swiper, el) {
+  if (!swiper || !el) return;
+
+  new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      entry.isIntersecting ? swiper.autoplay.start() : swiper.autoplay.stop();
+    });
+  }, { threshold: 0.3 }).observe(el);
+
+  const rect = el.getBoundingClientRect();
+  if (!(rect.top < 0.7 * window.innerHeight && rect.bottom > 0.3 * window.innerHeight)) {
+    swiper.autoplay.stop();
+  }
+}
+
+function bindManualScrollbar(swiper, scrollbarEl) {
+  if (!swiper || !scrollbarEl) return;
+
+  const update = () => syncManualScrollbar(swiper, scrollbarEl);
+
+  swiper.on("init", update);
+  swiper.on("progress", update);
+  swiper.on("setTranslate", update);
+  swiper.on("sliderMove", update);
+  swiper.on("touchMove", update);
+  swiper.on("slideChange", update);
+  swiper.on("transitionEnd", update);
+  swiper.on("resize", update);
+  swiper.on("observerUpdate", update);
+  swiper.on("breakpoint", update);
+  swiper.on("update", update);
+
+  requestAnimationFrame(() => {
+    swiper.update();
+    update();
+  });
+
+  window.addEventListener("resize", update);
+}
+
+/* =========================
    EDITOR SLIDER
 ========================= */
 (() => {
@@ -247,25 +354,25 @@ if (submissionsSwiperEl) {
 
   const editorSwiper = new Swiper(sliderEl, {
     direction: "horizontal",
-    watchSlidesProgress: true,
+    watchSlidesProgress: !0,
     slidesPerView: 1,
     spaceBetween: 32,
     threshold: 20,
-    centeredSlides: false,
+    centeredSlides: !1,
     speed: 400,
     autoplay: {
-      delay: 4000,
-      disableOnInteraction: false,
-      pauseOnMouseEnter: true
+      delay: 4e3,
+      disableOnInteraction: !1,
+      pauseOnMouseEnter: !0
     },
-    rewind: true,
+    rewind: !0,
     mousewheel: {
-      forceToAxis: true,
-      releaseOnEdges: true
+      forceToAxis: !0,
+      releaseOnEdges: !0
     },
-    observer: true,
-    observeParents: true,
-    updateOnWindowResize: true,
+    observer: !0,
+    observeParents: !0,
+    updateOnWindowResize: !0,
     breakpoints: {
       320: { slidesPerView: 1 },
       580: { slidesPerView: 2, spaceBetween: 24 },
@@ -275,65 +382,12 @@ if (submissionsSwiperEl) {
     navigation: nextEl && prevEl ? {
       nextEl,
       prevEl
-    } : false,
-    scrollbar: false
+    } : !1,
+    scrollbar: !1
   });
 
-  function updateEditorScrollbar() {
-    if (!scrollbarEl) return;
-
-    let dragEl = scrollbarEl.querySelector(".swiper-scrollbar-drag");
-    if (!dragEl) {
-      dragEl = document.createElement("div");
-      dragEl.className = "swiper-scrollbar-drag";
-      scrollbarEl.appendChild(dragEl);
-    }
-
-    const snapGrid = editorSwiper.snapGrid || [];
-    const totalSteps = Math.max(snapGrid.length - 1, 1);
-    const currentStep = Math.min(editorSwiper.realIndex ?? editorSwiper.activeIndex ?? 0, totalSteps);
-    const progress = currentStep / totalSteps;
-
-    const trackWidth = scrollbarEl.clientWidth;
-    const slidesPerView = Number(editorSwiper.params.slidesPerView) || 1;
-    const totalSlides = editorSwiper.slides ? editorSwiper.slides.length : 1;
-
-    let visibleRatio = slidesPerView / totalSlides;
-    if (!Number.isFinite(visibleRatio) || visibleRatio <= 0) visibleRatio = 1;
-    visibleRatio = Math.max(visibleRatio, 0.18);
-    visibleRatio = Math.min(visibleRatio, 1);
-
-    const dragWidth = trackWidth * visibleRatio;
-    const maxTranslate = Math.max(trackWidth - dragWidth, 0);
-    const translateX = maxTranslate * progress;
-
-    dragEl.style.width = `${dragWidth}px`;
-    dragEl.style.transform = `translate3d(${translateX}px, 0, 0)`;
-  }
-
-  editorSwiper.on("init", updateEditorScrollbar);
-  editorSwiper.on("slideChange", updateEditorScrollbar);
-  editorSwiper.on("transitionEnd", updateEditorScrollbar);
-  editorSwiper.on("setTranslate", updateEditorScrollbar);
-  editorSwiper.on("resize", updateEditorScrollbar);
-  editorSwiper.on("observerUpdate", updateEditorScrollbar);
-  editorSwiper.on("breakpoint", updateEditorScrollbar);
-
-  new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      entry.isIntersecting ? editorSwiper.autoplay.start() : editorSwiper.autoplay.stop();
-    });
-  }, { threshold: 0.3 }).observe(sliderEl);
-
-  const rect = sliderEl.getBoundingClientRect();
-  if (!(rect.top < 0.7 * window.innerHeight && rect.bottom > 0.3 * window.innerHeight)) {
-    editorSwiper.autoplay.stop();
-  }
-
-  requestAnimationFrame(() => {
-    editorSwiper.update();
-    updateEditorScrollbar();
-  });
+  attachAutoplayObserver(editorSwiper, sliderEl);
+  bindManualScrollbar(editorSwiper, scrollbarEl);
 })();
 
 /* =========================
@@ -354,25 +408,25 @@ if (submissionsSwiperEl) {
 
   const coachesSwiper = new Swiper(sliderEl, {
     direction: "horizontal",
-    watchSlidesProgress: true,
+    watchSlidesProgress: !0,
     slidesPerView: 1,
     spaceBetween: 32,
     threshold: 20,
-    centeredSlides: false,
+    centeredSlides: !1,
     speed: 400,
     autoplay: {
-      delay: 4000,
-      disableOnInteraction: false,
-      pauseOnMouseEnter: true
+      delay: 4e3,
+      disableOnInteraction: !1,
+      pauseOnMouseEnter: !0
     },
-    rewind: true,
+    rewind: !0,
     mousewheel: {
-      forceToAxis: true,
-      releaseOnEdges: true
+      forceToAxis: !0,
+      releaseOnEdges: !0
     },
-    observer: true,
-    observeParents: true,
-    updateOnWindowResize: true,
+    observer: !0,
+    observeParents: !0,
+    updateOnWindowResize: !0,
     breakpoints: {
       320: { slidesPerView: 1 },
       580: { slidesPerView: 2, spaceBetween: 24 },
@@ -382,32 +436,12 @@ if (submissionsSwiperEl) {
     navigation: nextEl && prevEl ? {
       nextEl,
       prevEl
-    } : false,
-    scrollbar: scrollbarEl ? {
-      el: scrollbarEl,
-      draggable: true,
-      hide: false
-    } : false
+    } : !1,
+    scrollbar: !1
   });
 
-  new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      entry.isIntersecting ? coachesSwiper.autoplay.start() : coachesSwiper.autoplay.stop();
-    });
-  }, { threshold: 0.3 }).observe(sliderEl);
-
-  const rect = sliderEl.getBoundingClientRect();
-  if (!(rect.top < 0.7 * window.innerHeight && rect.bottom > 0.3 * window.innerHeight)) {
-    coachesSwiper.autoplay.stop();
-  }
-
-  requestAnimationFrame(() => {
-    coachesSwiper.update();
-    if (coachesSwiper.scrollbar) {
-      coachesSwiper.scrollbar.updateSize();
-      coachesSwiper.scrollbar.setTranslate();
-    }
-  });
+  attachAutoplayObserver(coachesSwiper, sliderEl);
+  bindManualScrollbar(coachesSwiper, scrollbarEl);
 })();
 
 const eventsSwiper = new Swiper(".events_swiper", {
