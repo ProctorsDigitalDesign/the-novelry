@@ -3,15 +3,15 @@
   style.textContent = `
     .editor-slider_scrollbar,
     .coaches-slider_scrollbar {
-      background: #ea602a !important;
       border-radius: inherit;
       position: relative;
       overflow: hidden;
       cursor: pointer;
+      background: transparent !important;
     }
 
     .manual-scrollbar-drag {
-      background: var(--swiper-scrollbar-drag-bg-color, rgba(0,0,0,0.5));
+      background: #ea602a !important;
       border-radius: inherit;
       height: 100%;
       position: absolute;
