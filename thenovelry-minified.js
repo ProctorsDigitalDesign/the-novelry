@@ -7,7 +7,6 @@
       position: relative;
       overflow: hidden;
       cursor: pointer;
-      background: transparent !important;
     }
 
     .manual-scrollbar-drag {
