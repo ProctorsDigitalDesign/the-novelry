@@ -250,16 +250,16 @@ if (submissionsSwiperEl) {
     threshold: 20,
     centeredSlides: !1,
     speed: 400,
+    allowTouchMove: !1,
+    simulateTouch: !1,
     autoplay: {
       delay: 4e3,
       disableOnInteraction: !1,
       pauseOnMouseEnter: !0
     },
     rewind: !0,
-    mousewheel: {
-      forceToAxis: !0,
-      releaseOnEdges: !0
-    },
+    mousewheel: !1,
+    keyboard: !1,
     observer: !0,
     observeParents: !0,
     updateOnWindowResize: !0,
@@ -275,7 +275,7 @@ if (submissionsSwiperEl) {
     } : !1,
     scrollbar: scrollbarEl ? {
       el: scrollbarEl,
-      draggable: !0,
+      draggable: !1,
       hide: !1
     } : !1,
     on: {
@@ -326,16 +326,16 @@ if (submissionsSwiperEl) {
     threshold: 20,
     centeredSlides: false,
     speed: 400,
+    allowTouchMove: false,
+    simulateTouch: false,
     autoplay: {
       delay: 4000,
       disableOnInteraction: false,
       pauseOnMouseEnter: true
     },
     rewind: true,
-    mousewheel: {
-      forceToAxis: true,
-      releaseOnEdges: true
-    },
+    mousewheel: false,
+    keyboard: false,
     observer: true,
     observeParents: true,
     updateOnWindowResize: true,
@@ -351,7 +351,7 @@ if (submissionsSwiperEl) {
     } : false,
     scrollbar: scrollbarEl ? {
       el: scrollbarEl,
-      draggable: true,
+      draggable: false,
       hide: false
     } : false,
     on: {
