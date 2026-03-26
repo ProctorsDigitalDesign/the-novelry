@@ -232,110 +232,126 @@ if (submissionsSwiperEl) {
 /* =========================
    EDITOR SLIDER
 ========================= */
+(() => {
+  const sliderEl = document.getElementById("editor-slider");
+  const controlsEl = document.getElementById("editor-controls");
+  const nextEl = document.getElementById("editor-slider_button-next");
+  const prevEl = document.getElementById("editor-slider_button-prev");
+  const scrollbarEl = document.getElementById("editor-slider_scrollbar");
 
-$("#editor-slider").append($("#editor-controls"));
+  if (!sliderEl) return;
 
-const editorSwiper = new Swiper("#editor-slider", {
-  direction: "horizontal",
-  watchSlidesProgress: !0,
-  slidesPerView: 1,
-  spaceBetween: 32,
-  threshold: 20,
-  centeredSlides: !1,
-  speed: 400,
-  autoplay: {
-    delay: 4e3,
-    disableOnInteraction: !1,
-    pauseOnMouseEnter: !0
-  },
-  rewind: !0,
-  mousewheel: {
-    forceToAxis: !0,
-    releaseOnEdges: !0
-  },
-  breakpoints: {
-    320: { slidesPerView: 1 },
-    580: { slidesPerView: 2, spaceBetween: 24 },
-    992: { slidesPerView: 3, spaceBetween: 32 },
-    1200: { slidesPerView: 3 }
-  },
-  navigation: {
-    nextEl: "#editor-slider_button-next",
-    prevEl: "#editor-slider_button-prev"
-  },
-  scrollbar: {
-    el: "#editor-slider_scrollbar",
-    draggable: !0
+  if (controlsEl) {
+    sliderEl.appendChild(controlsEl);
   }
-});
 
-const editorSwiperEl = document.querySelector("#editor-slider");
-if (editorSwiperEl) {
+  const editorSwiper = new Swiper(sliderEl, {
+    direction: "horizontal",
+    watchSlidesProgress: !0,
+    slidesPerView: 1,
+    spaceBetween: 32,
+    threshold: 20,
+    centeredSlides: !1,
+    speed: 400,
+    autoplay: {
+      delay: 4e3,
+      disableOnInteraction: !1,
+      pauseOnMouseEnter: !0
+    },
+    rewind: !0,
+    mousewheel: {
+      forceToAxis: !0,
+      releaseOnEdges: !0
+    },
+    breakpoints: {
+      320: { slidesPerView: 1 },
+      580: { slidesPerView: 2, spaceBetween: 24 },
+      992: { slidesPerView: 3, spaceBetween: 32 },
+      1200: { slidesPerView: 3 }
+    },
+    navigation: nextEl && prevEl ? {
+      nextEl,
+      prevEl
+    } : !1,
+    scrollbar: scrollbarEl ? {
+      el: scrollbarEl,
+      draggable: !0
+    } : !1
+  });
+
   new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       entry.isIntersecting ? editorSwiper.autoplay.start() : editorSwiper.autoplay.stop();
     });
-  }, { threshold: 0.3 }).observe(editorSwiperEl);
+  }, { threshold: 0.3 }).observe(sliderEl);
 
-  const rect = editorSwiperEl.getBoundingClientRect();
+  const rect = sliderEl.getBoundingClientRect();
   if (!(rect.top < 0.7 * window.innerHeight && rect.bottom > 0.3 * window.innerHeight)) {
     editorSwiper.autoplay.stop();
   }
-}
+})();
 
 /* =========================
    COACHES SLIDER
 ========================= */
+(() => {
+  const sliderEl = document.getElementById("coaches-slider");
+  const controlsEl = document.getElementById("coaches-controls");
+  const nextEl = document.getElementById("coaches-slider_button-next");
+  const prevEl = document.getElementById("coaches-slider_button-prev");
+  const scrollbarEl = document.getElementById("coaches-slider_scrollbar");
 
-$("#coaches-slider").append($("#coaches-controls"));
+  if (!sliderEl) return;
 
-const coachesSwiper = new Swiper("#coaches-slider", {
-  direction: "horizontal",
-  watchSlidesProgress: !0,
-  slidesPerView: 1,
-  spaceBetween: 32,
-  threshold: 20,
-  centeredSlides: !1,
-  speed: 400,
-  autoplay: {
-    delay: 4e3,
-    disableOnInteraction: !1,
-    pauseOnMouseEnter: !0
-  },
-  rewind: !0,
-  mousewheel: {
-    forceToAxis: !0,
-    releaseOnEdges: !0
-  },
-  breakpoints: {
-    320: { slidesPerView: 1 },
-    580: { slidesPerView: 2, spaceBetween: 24 },
-    992: { slidesPerView: 3, spaceBetween: 32 },
-    1200: { slidesPerView: 3 }
-  },
-  navigation: {
-    nextEl: "#coaches-slider_button-next",
-    prevEl: "#coaches-slider_button-prev"
-  },
-  scrollbar: {
-    el: "#coaches-slider_scrollbar",
-    draggable: !0
+  if (controlsEl) {
+    sliderEl.appendChild(controlsEl);
   }
-});
 
-const coachesSwiperEl = document.querySelector("#coaches-slider");
-if (coachesSwiperEl) {
+  const coachesSwiper = new Swiper(sliderEl, {
+    direction: "horizontal",
+    watchSlidesProgress: !0,
+    slidesPerView: 1,
+    spaceBetween: 32,
+    threshold: 20,
+    centeredSlides: !1,
+    speed: 400,
+    autoplay: {
+      delay: 4e3,
+      disableOnInteraction: !1,
+      pauseOnMouseEnter: !0
+    },
+    rewind: !0,
+    mousewheel: {
+      forceToAxis: !0,
+      releaseOnEdges: !0
+    },
+    breakpoints: {
+      320: { slidesPerView: 1 },
+      580: { slidesPerView: 2, spaceBetween: 24 },
+      992: { slidesPerView: 3, spaceBetween: 32 },
+      1200: { slidesPerView: 3 }
+    },
+    navigation: nextEl && prevEl ? {
+      nextEl,
+      prevEl
+    } : !1,
+    scrollbar: scrollbarEl ? {
+      el: scrollbarEl,
+      draggable: !0
+    } : !1
+  });
+
   new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       entry.isIntersecting ? coachesSwiper.autoplay.start() : coachesSwiper.autoplay.stop();
     });
-  }, { threshold: 0.3 }).observe(coachesSwiperEl);
+  }, { threshold: 0.3 }).observe(sliderEl);
 
-  const rect = coachesSwiperEl.getBoundingClientRect();
+  const rect = sliderEl.getBoundingClientRect();
   if (!(rect.top < 0.7 * window.innerHeight && rect.bottom > 0.3 * window.innerHeight)) {
     coachesSwiper.autoplay.stop();
   }
-}
+})();
 
 const eventsSwiper = new Swiper(".events_swiper", {
   direction: "horizontal",
