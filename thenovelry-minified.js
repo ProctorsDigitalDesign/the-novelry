@@ -276,6 +276,12 @@ function getEffectiveSlidesPerView(swiper) {
 function ensureManualScrollbar(scrollbarEl) {
   if (!scrollbarEl) return null;
 
+  /* ONLY apply to editor + coaches */
+  if (
+    scrollbarEl.id !== "editor-slider_scrollbar" &&
+    scrollbarEl.id !== "coaches-slider_scrollbar"
+  ) return null;
+
   let dragEl = scrollbarEl.querySelector(".manual-scrollbar-drag");
   if (!dragEl) {
     dragEl = document.createElement("div");
@@ -283,17 +289,19 @@ function ensureManualScrollbar(scrollbarEl) {
     scrollbarEl.appendChild(dragEl);
   }
 
+  /* KEEP Webflow track styling (background image etc.) */
   scrollbarEl.style.position = "relative";
   scrollbarEl.style.overflow = "hidden";
   scrollbarEl.style.cursor = "pointer";
 
+  /* DO NOT override colors */
   dragEl.style.position = "absolute";
   dragEl.style.left = "0";
   dragEl.style.top = "0";
   dragEl.style.height = "100%";
-  dragEl.style.willChange = "transform,width";
   dragEl.style.pointerEvents = "none";
   dragEl.style.borderRadius = "inherit";
+  dragEl.style.willChange = "transform,width";
 
   return dragEl;
 }
