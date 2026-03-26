@@ -259,18 +259,19 @@ function ensureManualScrollbar(scrollbarEl) {
     scrollbarEl.appendChild(dragEl);
   }
 
-  scrollbarEl.style.position = "relative";
-  scrollbarEl.style.overflow = "hidden";
-  dragEl.style.position = "absolute";
-  dragEl.style.left = "0";
-  dragEl.style.top = "0";
-  dragEl.style.height = "100%";
-  dragEl.style.willChange = "transform,width";
+  /* ── FIX: kill any Swiper-injected transition on the track and drag ── */
+  scrollbarEl.style.cssText += ";position:relative;overflow:hidden;";
+  dragEl.style.cssText += ";position:absolute;left:0;top:0;height:100%;will-change:transform,width;transition:none !important;";
 
   return dragEl;
 }
 
-function syncManualScrollbar(swiper, scrollbarEl) {
+/**
+ * FIX: Accept an optional rawTranslate for live-drag scenarios.
+ * During touchMove/sliderMove Swiper's .progress hasn't been updated yet,
+ * so we derive progress from the raw translate value ourselves.
+ */
+function syncManualScrollbar(swiper, scrollbarEl, rawTranslate) {
   if (!swiper || !scrollbarEl) return;
 
   const dragEl = ensureManualScrollbar(scrollbarEl);
@@ -288,9 +289,24 @@ function syncManualScrollbar(swiper, scrollbarEl) {
   const dragWidth = trackWidth * visibleRatio;
   const maxTranslate = Math.max(trackWidth - dragWidth, 0);
 
-  let progress = swiper.progress;
+  let progress;
+
+  if (rawTranslate !== undefined && Number.isFinite(rawTranslate)) {
+    /* Derive progress from the live translate during active drag */
+    const minT = swiper.minTranslate();
+    const maxT = swiper.maxTranslate();
+    const range = minT - maxT; // both are negative; minT is closer to 0
+    progress = range !== 0 ? (minT - rawTranslate) / range : 0;
+  } else {
+    progress = swiper.progress;
+  }
+
   if (!Number.isFinite(progress)) progress = 0;
   progress = Math.max(0, Math.min(1, progress));
+
+  /* FIX: suppress transition during drag so there's no lag/glitch */
+  const isDragging = swiper.touches && swiper.touches.diff !== 0 && swiper.animating === false;
+  dragEl.style.transition = isDragging ? "none" : "";
 
   dragEl.style.width = `${dragWidth}px`;
   dragEl.style.transform = `translate3d(${maxTranslate * progress}px, 0, 0)`;
@@ -314,19 +330,30 @@ function attachAutoplayObserver(swiper, el) {
 function bindManualScrollbar(swiper, scrollbarEl) {
   if (!swiper || !scrollbarEl) return;
 
+  /* FIX: Strip any Swiper-owned scrollbar CSS class that carries built-in
+     transitions/animations — those conflict with manual rendering. */
+  scrollbarEl.classList.remove("swiper-scrollbar");
+
   const update = () => syncManualScrollbar(swiper, scrollbarEl);
 
-  swiper.on("init", update);
-  swiper.on("progress", update);
-  swiper.on("setTranslate", update);
-  swiper.on("sliderMove", update);
-  swiper.on("touchMove", update);
-  swiper.on("slideChange", update);
-  swiper.on("transitionEnd", update);
-  swiper.on("resize", update);
+  /* FIX: sliderMove receives the raw currentTranslate — pass it through
+     so the bar moves in real-time during finger drag without snapping. */
+  const updateFromMove = (_swiper, translate) => syncManualScrollbar(swiper, scrollbarEl, translate);
+
+  swiper.on("init",           update);
+  swiper.on("progress",       update);
+  swiper.on("setTranslate",   update);
+  swiper.on("sliderMove",     updateFromMove);  // ← raw translate during drag
+  swiper.on("touchMove",      updateFromMove);  // ← belt-and-suspenders
+  swiper.on("slideChange",    update);
+  swiper.on("transitionEnd",  update);
+  swiper.on("resize",         update);
   swiper.on("observerUpdate", update);
-  swiper.on("breakpoint", update);
-  swiper.on("update", update);
+  swiper.on("breakpoint",     update);
+  swiper.on("update",         update);
+
+  /* FIX: also snap bar back cleanly when touch ends */
+  swiper.on("touchEnd", update);
 
   requestAnimationFrame(() => {
     swiper.update();
@@ -340,10 +367,10 @@ function bindManualScrollbar(swiper, scrollbarEl) {
    EDITOR SLIDER
 ========================= */
 (() => {
-  const sliderEl = document.getElementById("editor-slider");
-  const controlsEl = document.getElementById("editor-controls");
-  const nextEl = document.getElementById("editor-slider_button-next");
-  const prevEl = document.getElementById("editor-slider_button-prev");
+  const sliderEl    = document.getElementById("editor-slider");
+  const controlsEl  = document.getElementById("editor-controls");
+  const nextEl      = document.getElementById("editor-slider_button-next");
+  const prevEl      = document.getElementById("editor-slider_button-prev");
   const scrollbarEl = document.getElementById("editor-slider_scrollbar");
 
   if (!sliderEl) return;
@@ -379,11 +406,8 @@ function bindManualScrollbar(swiper, scrollbarEl) {
       992: { slidesPerView: 3, spaceBetween: 32 },
       1200: { slidesPerView: 3 }
     },
-    navigation: nextEl && prevEl ? {
-      nextEl,
-      prevEl
-    } : !1,
-    scrollbar: !1
+    navigation: nextEl && prevEl ? { nextEl, prevEl } : !1,
+    scrollbar: !1   // manual scrollbar — no Swiper built-in
   });
 
   attachAutoplayObserver(editorSwiper, sliderEl);
@@ -394,10 +418,10 @@ function bindManualScrollbar(swiper, scrollbarEl) {
    COACHES SLIDER
 ========================= */
 (() => {
-  const sliderEl = document.getElementById("coaches-slider");
-  const controlsEl = document.getElementById("coaches-controls");
-  const nextEl = document.getElementById("coaches-slider_button-next");
-  const prevEl = document.getElementById("coaches-slider_button-prev");
+  const sliderEl    = document.getElementById("coaches-slider");
+  const controlsEl  = document.getElementById("coaches-controls");
+  const nextEl      = document.getElementById("coaches-slider_button-next");
+  const prevEl      = document.getElementById("coaches-slider_button-prev");
   const scrollbarEl = document.getElementById("coaches-slider_scrollbar");
 
   if (!sliderEl) return;
@@ -433,11 +457,8 @@ function bindManualScrollbar(swiper, scrollbarEl) {
       992: { slidesPerView: 3, spaceBetween: 32 },
       1200: { slidesPerView: 3 }
     },
-    navigation: nextEl && prevEl ? {
-      nextEl,
-      prevEl
-    } : !1,
-    scrollbar: !1
+    navigation: nextEl && prevEl ? { nextEl, prevEl } : !1,
+    scrollbar: !1   // manual scrollbar — no Swiper built-in
   });
 
   attachAutoplayObserver(coachesSwiper, sliderEl);
