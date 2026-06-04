@@ -11,71 +11,31 @@
     let title = document.title;
     let url = window.location.href;
 
-    $('[data-share-facebook]').attr('href', 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&title=' + encodeURIComponent(title)).attr('target', '_blank');
-    $('[data-share-twitter]').attr('href', 'https://twitter.com/share?url=' + encodeURIComponent(url) + '&title=' + encodeURIComponent(title) + '&summary=').attr('target', '_blank');
-    $('[data-share-linkedin]').attr('href', 'https://www.linkedin.com/shareArticle?mini=true&url=' + encodeURIComponent(url) + '&title=' + encodeURIComponent(title) + '&summary=').attr('target', '_blank');
-    $('[data-share-whatsapp]').attr('href', 'https://wa.me/?text=' + encodeURIComponent(url)).attr('target', '_blank');
+    $('[data-share-facebook]')
+      .attr('href', 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&title=' + encodeURIComponent(title))
+      .attr('target', '_blank');
+
+    $('[data-share-twitter]')
+      .attr('href', 'https://twitter.com/share?url=' + encodeURIComponent(url) + '&title=' + encodeURIComponent(title) + '&summary=')
+      .attr('target', '_blank');
+
+    $('[data-share-linkedin]')
+      .attr('href', 'https://www.linkedin.com/shareArticle?mini=true&url=' + encodeURIComponent(url) + '&title=' + encodeURIComponent(title) + '&summary=')
+      .attr('target', '_blank');
+
+    $('[data-share-whatsapp]')
+      .attr('href', 'https://wa.me/?text=' + encodeURIComponent(url))
+      .attr('target', '_blank');
 
     if ($(".section_blog-other .blog_item-card").length < 1) {
       $(".section_blog-other").hide();
     }
   });
 
-  function initTOC() {
-    const contentEl = document.getElementById("toc-content");
-    const tocEl = document.getElementById("toc");
-
-    if (!contentEl || !tocEl) return;
-
-    tocEl.innerHTML = "";
-
-    const headings = contentEl.querySelectorAll("h2");
-
-    if (!headings.length) {
-      tocEl.style.display = "none";
-      return;
-    }
-
-    tocEl.style.display = "";
-
-    headings.forEach(function (heading, i) {
-      const text = heading.textContent.trim();
-      if (!text) return;
-
-      let str = text
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[°&\/\\#,+()$~%.'":;*?<>{}]/g, "")
-        .replace(/[^\w\-]+/g, "");
-
-      if (!str) str = "toc-heading-" + i;
-
-      let uniqueId = str;
-      let count = 2;
-
-      while (document.getElementById(uniqueId) && document.getElementById(uniqueId) !== heading) {
-        uniqueId = str + "-" + count;
-        count++;
-      }
-
-      heading.setAttribute("id", uniqueId);
-
-      const item = document.createElement("a");
-      item.textContent = text;
-      item.className = "tocitem";
-      item.href = "#" + uniqueId;
-
-      tocEl.appendChild(item);
-    });
-  }
-
   onReady(function () {
-    initTOC();
-    setTimeout(initTOC, 500);
-    setTimeout(initTOC, 1500);
-
     document.querySelectorAll(".w-richtext-align-center.w-richtext-figure-type-video").forEach((figure) => {
       const iframe = figure.querySelector("iframe");
+
       if (iframe && iframe.src.includes("embedly.com") && iframe.src.includes("tiktok.com")) {
         figure.style.paddingBottom = "760px";
       }
@@ -85,6 +45,7 @@
   onReady(function () {
     document.querySelectorAll(".tag-link").forEach((link) => {
       const tagName = link.querySelector(".tag-text")?.textContent.trim();
+
       if (tagName) {
         const encoded = tagName.replace(/ /g, "+");
         link.href = `/blog?topic_equal=%5B"${encoded}"%5D`;
@@ -258,17 +219,25 @@
       popup.style.display = "none";
       popupVisible = false;
       enableScroll();
-      if (pendingNavigation) window.location.href = pendingNavigation;
+
+      if (pendingNavigation) {
+        window.location.href = pendingNavigation;
+      }
     }
 
     document.addEventListener("mouseout", function (e) {
       if (popupVisible || getCookie(COOKIE_NAME)) return;
-      if (!e.relatedTarget && e.clientY <= 10) showPopup();
+
+      if (!e.relatedTarget && e.clientY <= 10) {
+        showPopup();
+      }
     });
 
     document.addEventListener("click", function (e) {
       const link = e.target.closest("a");
+
       if (!link || popupVisible || getCookie(COOKIE_NAME)) return;
+
       if (link.href && link.origin === location.origin && !link.href.includes("#")) {
         e.preventDefault();
         pendingNavigation = link.href;
@@ -284,13 +253,18 @@
     }
 
     popup.addEventListener("click", function (e) {
-      if (e.target === popup) allowExit();
+      if (e.target === popup) {
+        allowExit();
+      }
     });
 
     if (successMessage) {
       new MutationObserver(() => {
         const visible = getComputedStyle(successMessage).display !== "none";
-        if (visible) allowExit();
+
+        if (visible) {
+          allowExit();
+        }
       }).observe(successMessage, { attributes: true });
     }
   });
