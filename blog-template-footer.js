@@ -21,57 +21,58 @@
     }
   });
 
-  onReady(function () {
-    const contentEl = document.getElementById("content");
+  function initTOC() {
+    const contentEl = document.getElementById("toc-content");
     const tocEl = document.getElementById("toc");
 
-    if (contentEl && tocEl) {
-      tocEl.innerHTML = "";
+    if (!contentEl || !tocEl) return;
 
-      const headings = contentEl.querySelectorAll("h2");
+    tocEl.innerHTML = "";
 
-      if (headings.length) {
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-            const id = entry.target.getAttribute("id");
+    const headings = contentEl.querySelectorAll("h2");
 
-            if (entry.isIntersecting) {
-              tocEl.querySelectorAll(".active").forEach((el) => el.classList.remove("active"));
-              const activeLink = tocEl.querySelector(`a[href="#${CSS.escape(id)}"]`);
-              if (activeLink) activeLink.classList.add("active");
-            }
-          });
-        }, { rootMargin: "0px 0px -75% 0px" });
-
-        headings.forEach(function (heading, i) {
-          let str = heading.textContent.trim()
-            .replace(/\s+/g, "-")
-            .replace(/[°&\/\\#,+()$~%.'":;*?<>{}]/g, "")
-            .toLowerCase();
-
-          if (!str) str = "toc-" + i;
-
-          let uniqueId = str;
-          let count = 2;
-
-          while (document.getElementById(uniqueId) && document.getElementById(uniqueId) !== heading) {
-            uniqueId = str + "-" + count;
-            count++;
-          }
-
-          heading.setAttribute("id", uniqueId);
-
-          observer.observe(heading);
-
-          const item = document.createElement("a");
-          item.innerHTML = heading.innerHTML;
-          item.className = "tocitem";
-          item.href = "#" + uniqueId;
-
-          tocEl.appendChild(item);
-        });
-      }
+    if (!headings.length) {
+      tocEl.style.display = "none";
+      return;
     }
+
+    tocEl.style.display = "";
+
+    headings.forEach(function (heading, i) {
+      const text = heading.textContent.trim();
+      if (!text) return;
+
+      let str = text
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[°&\/\\#,+()$~%.'":;*?<>{}]/g, "")
+        .replace(/[^\w\-]+/g, "");
+
+      if (!str) str = "toc-heading-" + i;
+
+      let uniqueId = str;
+      let count = 2;
+
+      while (document.getElementById(uniqueId) && document.getElementById(uniqueId) !== heading) {
+        uniqueId = str + "-" + count;
+        count++;
+      }
+
+      heading.setAttribute("id", uniqueId);
+
+      const item = document.createElement("a");
+      item.textContent = text;
+      item.className = "tocitem";
+      item.href = "#" + uniqueId;
+
+      tocEl.appendChild(item);
+    });
+  }
+
+  onReady(function () {
+    initTOC();
+    setTimeout(initTOC, 500);
+    setTimeout(initTOC, 1500);
 
     document.querySelectorAll(".w-richtext-align-center.w-richtext-figure-type-video").forEach((figure) => {
       const iframe = figure.querySelector("iframe");
@@ -145,9 +146,7 @@
       }
 
       function shouldEnableSlider() {
-        const sliderWidth = slider.clientWidth;
-        const slidesWidth = getSlidesTotalWidth();
-        return slidesWidth > sliderWidth + 1;
+        return getSlidesTotalWidth() > slider.clientWidth + 1;
       }
 
       function showNavigation() {
@@ -172,9 +171,7 @@
       }
 
       function enableSliderMode() {
-        if (swiperInstance) return;
-
-        if (typeof Swiper === "undefined") return;
+        if (swiperInstance || typeof Swiper === "undefined") return;
 
         slider.classList.add("is-swiper-active");
         showNavigation();
